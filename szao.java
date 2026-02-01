@@ -1,12 +1,13 @@
 
 import java.io.*;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Scanner;
 
 public class szao {
 
-    static final String FILE_NAME = "BCszao.txt";
+    static final String FILE_NAME = "BCkd.txt";
     static Scanner sc = new Scanner(System.in);
     static long[] accountIds = new long[100];
     static String[] accountNames = new String[100];
@@ -14,14 +15,16 @@ public class szao {
     static double[] wallet = new double[100];
     static double[] savings = new double[100];
     static double[] loanBalance = new double[100];
-    static LocalDate[] lastSavingsInterest = new LocalDate[100];
-    static LocalDate[] loanStart = new LocalDate[100];
+    static LocalDateTime[] lastSavingsInterest = new LocalDateTime[100];
+    static LocalDateTime[] loanStart = new LocalDateTime[100];
+    static LocalDateTime[] savingsStart = new LocalDateTime[100];
     static int accountCount = 0;
     static long nextId = 66671001;
 
     public static void main(String[] args) {
         loadData();
-        System.out.println("Welcome to Banco Centro");
+        System.out.println("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+        System.out.println("\nWelcome to Philippine National Banco");
 
         while (true) {
             System.out.println("\n1. Create Account\n2. Login\n3. Currency Exchange\n4. Exit");
@@ -37,7 +40,7 @@ public class szao {
                     currencyExchange();
                 case "4" -> {
                     saveData();
-                    System.out.println("Thank you for using Banco Centro.");
+                    System.out.println("\nThank you for using Banco Centro.");
                     System.exit(0);
                 }
                 default ->
@@ -96,7 +99,8 @@ public class szao {
         wallet[accountCount] = 0;
         savings[accountCount] = 0;
         loanBalance[accountCount] = 0;
-        lastSavingsInterest[accountCount] = LocalDate.now();
+        savingsStart[accountCount] = LocalDateTime.now();
+        lastSavingsInterest[accountCount] = LocalDateTime.now();
         loanStart[accountCount] = null;
 
         System.out.println("\nAccount created, \nID: " + accountIds[accountCount]);
@@ -208,6 +212,10 @@ public class szao {
                 if (wallet[accIndex] >= amt) {
                     wallet[accIndex] -= amt;
                     savings[accIndex] += amt;
+                    if (savingsStart[accIndex] == null) {
+                        savingsStart[accIndex] = LocalDateTime.now();
+                        lastSavingsInterest[accIndex] = LocalDateTime.now();
+                    }
                 } else {
                     System.out.println("\nNot enough balance.");
                 }
@@ -226,34 +234,31 @@ public class szao {
         while (true) {
             applyLoanInterest(accIndex);
             System.out.println("\n~~~~~~Loan Balance: ₱" + loanBalance[accIndex] + "~~~~~~");
-            System.out.println("\n1.Request Loan\n2.Pay Loan\n3.Back");
-            String c = sc.nextLine();
+            System.out.println("\n1. Request Loan\n2. Pay Loan\n3. Back");
+            String lm = sc.nextLine();
 
-            if (c.equals("3")) {
+            if (lm.equals("3")) {
                 return;
             }
 
-            if (c.equals("1")) {
+            if (lm.equals("1")) {
                 double limit = getLoanLimit(wallet[accIndex]);
-                if (limit == 10000) {
+                if (limit == 0) {
                     System.out.println("\nYour balance does not qualify for a loan.");
                     continue;
                 }
-
                 System.out.println("\nMaximum loan you can borrow: ₱" + limit);
                 System.out.print("\nLoan amount: ");
                 double amt = Double.parseDouble(sc.nextLine());
-
-                if (amt <= 0 || amt > limit) {
-                    System.out.println("\nInvalid loan amount.");
+                if (amt > limit) {
+                    System.out.println("\nLoan amount exceeds limit.");
                     continue;
                 }
-
                 loanBalance[accIndex] += amt;
                 wallet[accIndex] += amt;
-                loanStart[accIndex] = LocalDate.now();
+                loanStart[accIndex] = LocalDateTime.now();
                 System.out.println("\nLoan sanctioned and added to wallet.");
-            } else if (c.equals("2")) {
+            } else if (lm.equals("2")) {
                 System.out.print("\nPayment amount: ");
                 double amt = Double.parseDouble(sc.nextLine());
 
@@ -261,7 +266,6 @@ public class szao {
                     System.out.println("Invalid amount.");
                     continue;
                 }
-
                 if (wallet[accIndex] >= amt) {
                     wallet[accIndex] -= amt;
                     loanBalance[accIndex] -= amt;
@@ -277,9 +281,20 @@ public class szao {
     }
 
     static void applySavingsInterest(int accIndex) {
-        if (lastSavingsInterest[accIndex].isBefore(LocalDate.now())) {
-            savings[accIndex] *= 1.02;
-            lastSavingsInterest[accIndex] = LocalDate.now();
+        if (savings[accIndex] <= 0 || savingsStart[accIndex] == null) {
+            return;
+        }
+
+        long days = ChronoUnit.DAYS.between(savingsStart[accIndex], LocalDateTime.now());
+
+        if (days >= 30) {
+            long months = days / 30;
+
+            for (int i = 0; i < months; i++) {
+                savings[accIndex] *= 1.04;
+            }
+            savingsStart[accIndex] = LocalDateTime.now();
+            lastSavingsInterest[accIndex] = LocalDateTime.now();
         }
     }
 
@@ -302,14 +317,14 @@ public class szao {
             return;
         }
 
-        long days = ChronoUnit.DAYS.between(loanStart[accIndex], LocalDate.now());
+        long days = ChronoUnit.DAYS.between(loanStart[accIndex], LocalDateTime.now());
 
         if (days > 120) {
-            loanBalance[accIndex] *= 1.15;
-            loanStart[accIndex] = LocalDate.now();
+            loanBalance[accIndex] *= 1.20;
+            loanStart[accIndex] = LocalDateTime.now();
         } else if (days > 30) {
-            loanBalance[accIndex] *= 1.07;
-            loanStart[accIndex] = LocalDate.now();
+            loanBalance[accIndex] *= 1.09;
+            loanStart[accIndex] = LocalDateTime.now();
         }
     }
 
@@ -326,10 +341,7 @@ public class szao {
             pw.println(accountCount);
             pw.println(nextId);
             for (int i = 0; i < accountCount; i++) {
-                pw.println(accountIds[i] + ", " + accountNames[i] + ", "
-                        + accountPasswords[i] + ", " + wallet[i] + ", " + savings[i] + ", "
-                        + loanBalance[i] + ", " + lastSavingsInterest[i] + ", "
-                        + (loanStart[i] != null ? loanStart[i] : "null"));
+                pw.println(accountIds[i] + ", " + accountNames[i] + ", " + accountPasswords[i] + ", " + wallet[i] + ", " + savings[i] + ", " + loanBalance[i] + ", " + lastSavingsInterest[i].format(dtf) + ", " + (loanStart[i] != null ? loanStart[i].format(dtf) : "null"));
             }
         } catch (Exception e) {
             System.out.println("Save error.");
@@ -348,11 +360,14 @@ public class szao {
                 wallet[i] = Double.parseDouble(parts[3]);
                 savings[i] = Double.parseDouble(parts[4]);
                 loanBalance[i] = Double.parseDouble(parts[5]);
-                lastSavingsInterest[i] = LocalDate.parse(parts[6]);
-                loanStart[i] = parts[7].equals("null") ? null : LocalDate.parse(parts[7]);
+                lastSavingsInterest[i] = LocalDateTime.parse(parts[6], dtf);
+                savingsStart[i] = lastSavingsInterest[i];
+                loanStart[i] = parts[7].equals("null") ? null : LocalDateTime.parse(parts[7], dtf);
             }
         } catch (Exception e) {
             accountCount = 0;
         }
     }
+
+    static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 }
