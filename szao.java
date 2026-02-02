@@ -53,10 +53,11 @@ public class szao {
     static LocalDateTime[] savingsStart = new LocalDateTime[100];
     static int accountCount = 0;
     static long nextId = 66671001;
+    static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
 
     public static void main(String[] args) {
         loadData();
-        System.out.println("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+        System.out.println("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
         System.out.println("\nWelcome to Philippine National Banco");
 
         while (true) {
@@ -103,20 +104,27 @@ public class szao {
                 continue;
             }
 
-            double result = 0;
+            double result;
             switch (c) {
-                case "1" ->
+                case "1" -> {
                     result = amt / 56.0;
-                case "2" ->
+                    System.out.print("\nConverted Amount: $" + result);
+                }
+                case "2" -> {
                     result = amt * 56.0;
-                case "3" ->
+                    System.out.print("\nConverted Amount: ₱" + result);
+                }
+                case "3" -> {
                     result = amt * 1.08;
-                case "4" ->
+                    System.out.print("\nConverted Amount: $" + result);
+                }
+                case "4" -> {
                     result = amt * 60.0;
+                    System.out.print("\nConverted Amount: ₱" + result);
+                }
                 default ->
                     System.out.println("\nInvalid option.");
             }
-            System.out.println("\nConverted amount: " + result);
         }
     }
 
@@ -170,8 +178,8 @@ public class szao {
         applyLoanInterest(accIndex);
 
         while (true) {
-            System.out.println("\n~~~~~~Welcome, " + accountNames[accIndex] + "~~~~~~");
-            System.out.println("\n1.Wallet\n2.Savings\n3.Loan\n4.Summary\n5.Logout");
+            System.out.println("\n~~~~~~ Welcome, " + accountNames[accIndex] + " ~~~~~~");
+            System.out.println("\n1. Wallet\n2. Savings\n3. Loan\n4. Summary\n5. Logout");
             System.out.print("Choose: ");
             String c = sc.nextLine();
 
@@ -196,8 +204,8 @@ public class szao {
 
     static void walletMenu(int accIndex) {
         while (true) {
-            System.out.println("\n~~~~~~Wallet Balance: ₱" + wallet[accIndex] + "~~~~~~");
-            System.out.println("\n1.Deposit\n2.Withdraw\n3.Back");
+            System.out.println("\n~~~~~~ Wallet Balance: ₱" + wallet[accIndex] + " ~~~~~~");
+            System.out.println("\n1. Deposit\n2. Withdraw\n3. Back\nChoose: ");
             String c = sc.nextLine();
 
             if (c.equals("3")) {
@@ -226,8 +234,8 @@ public class szao {
     static void savingsMenu(int accIndex) {
         while (true) {
             applySavingsInterest(accIndex);
-            System.out.println("\n~~~~~~Savings Balance: ₱" + savings[accIndex] + "~~~~~~");
-            System.out.println("\n1.Deposit from Wallet\n2.Withdraw to Wallet\n3.Back");
+            System.out.println("\n~~~~~~ Savings Balance: ₱" + savings[accIndex] + " ~~~~~~");
+            System.out.println("\n1. Deposit from Wallet\n2. Withdraw to Wallet\n3. Back\nChoose: ");
             String c = sc.nextLine();
 
             if (c.equals("3")) {
@@ -266,8 +274,8 @@ public class szao {
     static void loanMenu(int accIndex) {
         while (true) {
             applyLoanInterest(accIndex);
-            System.out.println("\n~~~~~~Loan Balance: ₱" + loanBalance[accIndex] + "~~~~~~");
-            System.out.println("\n1. Request Loan\n2. Pay Loan\n3. Back");
+            System.out.println("\n~~~~~~ Loan Balance: ₱" + loanBalance[accIndex] + " ~~~~~~");
+            System.out.println("\n1. Request Loan\n2. Pay Loan\n3. Back\nChoose: ");
             String lm = sc.nextLine();
 
             if (lm.equals("3")) {
@@ -319,7 +327,6 @@ public class szao {
         }
 
         long days = ChronoUnit.DAYS.between(savingsStart[accIndex], LocalDateTime.now());
-
         if (days >= 30) {
             long months = days / 30;
 
@@ -332,11 +339,11 @@ public class szao {
     }
 
     static double getLoanLimit(double walletBalance) {
-        if (walletBalance >= 10000 && walletBalance <= 20000) {
+        if (walletBalance >= 10000 && walletBalance <= 19999) {
             return 5000;
-        } else if (walletBalance >= 20000 && walletBalance < 25000) {
+        } else if (walletBalance >= 20000 && walletBalance < 29999) {
             return 10000;
-        } else if (walletBalance >= 30000 && walletBalance <= 50000) {
+        } else if (walletBalance >= 30000 && walletBalance <= 49999) {
             return 20000;
         } else if (walletBalance > 50000) {
             return 30000;
@@ -351,18 +358,18 @@ public class szao {
         }
 
         long days = ChronoUnit.DAYS.between(loanStart[accIndex], LocalDateTime.now());
+        if (days >= 30) {
+            long months = days / 30;
 
-        if (days > 120) {
-            loanBalance[accIndex] *= 1.20;
-            loanStart[accIndex] = LocalDateTime.now();
-        } else if (days > 30) {
-            loanBalance[accIndex] *= 1.09;
+            for (int i = 0; i < months; i++) {
+                loanBalance[accIndex] *= 1.09;
+            }
             loanStart[accIndex] = LocalDateTime.now();
         }
     }
 
     static void summary(int accIndex) {
-        System.out.println("\n~~~~~~SUMMARY~~~~~~");
+        System.out.println("\n~~~~~~ SUMMARY ~~~~~~");
         System.out.println("Name: " + accountNames[accIndex]);
         System.out.println("Wallet: ₱" + wallet[accIndex]);
         System.out.println("Savings: ₱" + savings[accIndex]);
@@ -374,7 +381,10 @@ public class szao {
             pw.println(accountCount);
             pw.println(nextId);
             for (int i = 0; i < accountCount; i++) {
-                pw.println(accountIds[i] + ", " + accountNames[i] + ", " + accountPasswords[i] + ", " + wallet[i] + ", " + savings[i] + ", " + loanBalance[i] + ", " + lastSavingsInterest[i].format(dtf) + ", " + (loanStart[i] != null ? loanStart[i].format(dtf) : "null"));
+                pw.println(accountIds[i] + ", " + accountNames[i] + ", " + accountPasswords[i]
+                        + ", " + wallet[i] + ", " + savings[i] + ", " + loanBalance[i] + ", "
+                        + (lastSavingsInterest[i] != null ? lastSavingsInterest[i].format(dtf) : "null")
+                        + ", " + (loanStart[i] != null ? loanStart[i].format(dtf) : "null"));
             }
         } catch (Exception e) {
             System.out.println("Save error.");
@@ -393,7 +403,7 @@ public class szao {
                 wallet[i] = Double.parseDouble(parts[3]);
                 savings[i] = Double.parseDouble(parts[4]);
                 loanBalance[i] = Double.parseDouble(parts[5]);
-                lastSavingsInterest[i] = LocalDateTime.parse(parts[6], dtf);
+                lastSavingsInterest[i] = parts[6].equals("null") ? null : LocalDateTime.parse(parts[6], dtf);
                 savingsStart[i] = lastSavingsInterest[i];
                 loanStart[i] = parts[7].equals("null") ? null : LocalDateTime.parse(parts[7], dtf);
             }
@@ -401,6 +411,5 @@ public class szao {
             accountCount = 0;
         }
     }
-
-    static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 }
+
