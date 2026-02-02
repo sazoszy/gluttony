@@ -1,3 +1,36 @@
+/**
+ * Philippine National Banco (szao)
+ * 
+ * A simple command-line banking system that allows users to:
+ * - Create accounts with unique IDs and passwords.
+ * - Login to their accounts.
+ * - Manage wallet, savings, and loan balances.
+ * - Perform currency exchange between Peso, Dollar, and Euro.
+ * - View account summary.
+ * - Persist account data to a file.
+ * 
+ * Features:
+ * - Wallet: Deposit and withdraw funds.
+ * - Savings: Deposit from wallet, withdraw to wallet, and earn monthly interest (4% per 30 days).
+ * - Loan: Request loans based on wallet balance, pay loans, and accrue interest (9% after 30 days, 20% after 120 days).
+ * - Currency Exchange: Convert between Peso, Dollar, and Euro using fixed rates.
+ * - Data Persistence: Account data is saved to and loaded from a text file.
+ * 
+ * Data Structures:
+ * - Uses parallel arrays to store account information for up to 100 users.
+ * - Each account tracks ID, name, password, wallet, savings, loan balance, and timestamps for interest calculations.
+ * 
+ * Usage:
+ * - Run the program and follow the menu prompts.
+ * - Data is automatically saved on exit and loaded on startup.
+ * 
+ * Note:
+ * - This is a simple educational example and not suitable for production use.
+ * - No encryption or advanced error handling is implemented.
+ * 
+ * Author: [Kim]
+ * Date: [2/2/2026]
+ */
 
 import java.io.*;
 import java.time.LocalDateTime;
